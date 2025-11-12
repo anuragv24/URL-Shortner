@@ -36,11 +36,11 @@ export const redirectToShortUrl = asyncHandler(async (req, res) => {
   const url = await getShortUrl(id);
   if (!url) {
     // throw new ApiError(404, "Short URL not found");
-    res.redirect("http://localhost:5173/expire")
+    res.redirect(`${process.env.CLIENT_URL}expire`)
 
   }
   if(url.expiresAt < new Date()){
-    res.redirect("http://localhost:5173/expire")
+    res.redirect(`${process.env.CLIENT_URL}expire`)
   }
   res.redirect(url.full_url);
 });

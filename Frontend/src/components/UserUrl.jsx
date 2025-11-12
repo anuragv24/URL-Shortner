@@ -109,7 +109,7 @@ const UserUrl = () => {
                 <td className="px-6 py-4">
                   <div className="text-sm">
                     <a
-                      href={`http://localhost:8000/${url.short_url}`}
+                      href={`${import.meta.env.VITE_API_BASE_URL}/${url.short_url}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:text-blue-900 hover:underline"
@@ -129,7 +129,7 @@ const UserUrl = () => {
                   <button
                     onClick={() =>
                       handleCopy(
-                        `http://localhost:8000/${url.short_url}`,
+                        `${import.meta.env.VITE_API_BASE_URL}/${url.short_url}`,
                         url._id
                       )
                     }

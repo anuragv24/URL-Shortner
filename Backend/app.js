@@ -13,10 +13,28 @@ dotenv.config("./.env");
 
 const app = express();
 
-app.use(cors({
-  origin: "http://localhost:5173",
-  credentials: true
-}))
+// app.use(cors({
+//   origin: "http://localhost:5173",
+//   credentials: true
+// }))
+
+app.use(
+  cors({
+    origin: function (origin, callback){
+      const allowedOrigins = [
+        "http://localhost:5173",
+        ""
+      ]
+      if(!origin || allowedOrigins.includes(origin)){
+        callback(null, true)
+      } else {
+        callback(new Error("Not allowd by CORS"));
+
+      }
+    },
+    credentials: true,
+  })
+)
 
 app.use(express.urlencoded({extended:true}))
 app.use(express.json())
