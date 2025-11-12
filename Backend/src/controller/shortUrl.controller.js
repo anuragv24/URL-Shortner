@@ -25,7 +25,7 @@ export const createShortUrl = asyncHandler(async (req, res) => {
     .json(
       new ApiResponse(
         200,
-        { shortUrl: process.env.APP_URL + shortUrl },
+        { shortUrl: `${process.env.APP_URL}/` + shortUrl },
         "ShortUrl created Successfully"
       )
     );
@@ -36,11 +36,11 @@ export const redirectToShortUrl = asyncHandler(async (req, res) => {
   const url = await getShortUrl(id);
   if (!url) {
     // throw new ApiError(404, "Short URL not found");
-    res.redirect(`${process.env.CLIENT_URL}expire`)
+    res.redirect(`${process.env.CLIENT_URL}/expire`)
 
   }
   if(url.expiresAt < new Date()){
-    res.redirect(`${process.env.CLIENT_URL}expire`)
+    res.redirect(`${process.env.CLIENT_URL}/expire`)
   }
   res.redirect(url.full_url);
 });
