@@ -28,7 +28,7 @@ const RegisterForm = () => {
 
     try {
       const data = await registerUser(name, email, password);
-      console.log(data);
+      // console.log(data);
       dispatch(login(data.user));
       navigate({ to: "/dashboard" });
     } catch (error) {
@@ -107,7 +107,7 @@ const RegisterForm = () => {
           disabled={disabled}
           className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 items-center font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 rounded-md"
         >
-          {loading ? "creating...." : "Create Account"}
+          {loading ? "Creating...." : "Create Account"}
         </button>
       </form>
 

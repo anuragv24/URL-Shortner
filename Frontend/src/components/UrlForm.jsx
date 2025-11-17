@@ -18,7 +18,7 @@ const UrlForm = () => {
     e.preventDefault();
     try {
       const shortUrl = await createShortUrl(url, customSlug);
-      console.log("shortUrl, ", shortUrl);
+      // console.log("shortUrl, ", shortUrl);
       // console.log(shortUrl);
       setShortUrl(shortUrl);
       queryClient.invalidateQueries({ queryClient: ["userurls"] });
@@ -111,6 +111,7 @@ const UrlForm = () => {
           {isGenerateQR && <QRCode 
         size={256}
         value={shortUrl} />}
+        {isGenerateQR && <div className="min-h-full w-full bg-black/10">Hello</div> }
         </div>
       )}
       
