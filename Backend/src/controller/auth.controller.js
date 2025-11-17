@@ -17,9 +17,17 @@ export const register = asyncHandler(async (req, res) => {
 
   const user = await registerUser(name, email, password);
 
+  const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id)
+
   res
     .status(201)
-    .json(new ApiResponse(201, { user: user }, "User registered successfully"));
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
+    .json(
+      new ApiResponse(
+        201, 
+        { user: user }, 
+        "User registered  and logged in successfully"));
 });
 
 export const login = asyncHandler(async (req, res) => {
