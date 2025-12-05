@@ -90,7 +90,7 @@ userSchema.methods.checkOTP = async function(plainOTP){
 }
 
 userSchema.methods.isOTPCorrect = async function (otp){
-    return await bcrypt.compare(otp, this.otp)
+    return await bcrypt.compare(otp, this.otpHash)
 }
 
 userSchema.methods.generateAccessToken= function () {

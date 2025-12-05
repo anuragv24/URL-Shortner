@@ -1,5 +1,5 @@
 import User from "../models/user.model.js"
-
+import { createOTP } from "../utils/helper.js"
 
 export const findUserByEmail = async (email) => {
     const user = await User.findOne({email})
@@ -13,6 +13,8 @@ export const findUserById = async (id) => {
 
 export const createUser = async (name, email, password) => {
     const newUser = new User({name, email, password})
+    const otp = createOTP()
+    await newUser.setOtp(otp)
     await newUser.save()
     return newUser
 }

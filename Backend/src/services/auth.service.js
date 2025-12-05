@@ -34,3 +34,7 @@ export const loginUser = async(email, password) => {
 
     return loggedInUser
 }
+
+
+
+// OTP generated and saved to records in user.dao.js.
