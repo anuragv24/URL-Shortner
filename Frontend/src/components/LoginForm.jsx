@@ -3,6 +3,7 @@ import { loginUser } from "../api/user.api";
 import { useDispatch, useSelector } from "react-redux";
 import { login } from "../store/slice/authSlice";
 import {Link, useNavigate} from '@tanstack/react-router'
+import { EMAIL_REGEX, PASSWORD_REGEX } from "../utils/regex";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("one@gmail.com");
