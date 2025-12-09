@@ -114,13 +114,13 @@ const UserUrl = () => {
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:text-blue-900 hover:underline"
                     >
-                      {`localhost:8000/${url.short_url}`}
+                      {`${import.meta.env.VITE_API_BASE_URL}/${url.short_url}`}
                     </a>
                   </div>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                  <div className="text-sm text-gray-900 flex justify-center">
+                    <span className="px-5 py-1.5 inline-flex text-center text-xs  font-semibold rounded-2xl bg-blue-100 text-blue-800">
                       {url.clicks} {url.clicks === 1 ? "click" : "clicks"}
                     </span>
                   </div>

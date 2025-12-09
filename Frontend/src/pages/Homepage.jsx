@@ -9,7 +9,7 @@ const Homepage = () => {
         <h1 className='font-semibold text-center mb-5 text-2xl'>URL Shortener</h1>
         <UrlForm/>
     </div>
-    <p className='text-xl mt-1'><span className=' font-bold'>Note: </span>Links created without an account will be deleted after 10 minutes.</p>
+    <p className='text-xl mt-1'><span className=' font-bold'>Note: </span>Links created without an account will be deleted after 60 minutes.</p>
 
    </div>
   )

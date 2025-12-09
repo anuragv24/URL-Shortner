@@ -10,9 +10,19 @@ export const registerUser = async(name, email, password) => {
     return data.data
 }
 
+export const verifyUser = async(email, otpString) => {
+    console.log("email  ::  ", email)
+    console.log("otp  ::  ", otpString)
+    const {data} = await axiosInstance.post("/api/auth/verify-otp", {email, otpString})
+    return data.data
+}
+
+export const resendOTP = async(email) => {
+    const {data} = await axiosInstance.post("/api/auth/resend-otp", {email})
+    return data.data
+}
 export const logoutUser = async() => {
     const {data} = await axiosInstance.get("/api/auth/logout")
-    console.log("logout:  ", data)
     return data.statusCode === 200
 }
 

@@ -8,5 +8,5 @@ export const homePageRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/',
     component: Homepage,
-    // beforeLoad: redirectIfAuth
+    beforeLoad: redirectIfAuth
 })

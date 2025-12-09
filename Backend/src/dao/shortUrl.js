@@ -10,7 +10,7 @@ export const saveShortUrl = async  (shortUrl, longUrl, userId) => {
         if(userId){
             newUrl.user = userId
         }else {
-            const expiresAt = new Date(Date.now() + 10 * 60 * 1000)
+            const expiresAt = new Date(Date.now() + 60 * 60 * 1000)
             newUrl.expiresAt = expiresAt
         }
 

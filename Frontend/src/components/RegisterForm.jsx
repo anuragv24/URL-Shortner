@@ -1,27 +1,35 @@
 import React, { useState, useEffect } from "react";
-import { registerUser } from "../api/user.api";
+import { registerUser, verifyUser, resendOTP } from "../api/user.api";
 import { useDispatch } from "react-redux";
 import { login } from "../store/slice/authSlice";
 import { Link, useNavigate } from "@tanstack/react-router";
 import OTPComp from "./OTPComp";
+import { EMAIL_REGEX, PASSWORD_REGEX } from "../utils/regex";
 
 const RegisterForm = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [disabled, setDisabled] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
+  const [showPassword, setShowPassword] = useState(false)
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  const isFormValid = email.trim() !== "" && password.trim() !== ""
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (password.length < 6) {
-      setError("Password must be at least 6 characters long");
+    if(!EMAIL_REGEX.test(email)){
+      setError("Please enter a valid email address.")
+      return
+    }
+
+    if (!PASSWORD_REGEX.test(password)) {
+      setError("Password must be at least 8 characters, include an uppercase letter, a number, and a special character.");
       return;
     }
 
@@ -29,7 +37,7 @@ const RegisterForm = () => {
     setError("");
 
     try {
-      // const data = await registerUser(name, email, password);
+      const data = await registerUser(name, email, password);
       // console.log(data);
       // dispatch(login(data.user));
       // navigate({ to: "/dashboard" });
@@ -41,13 +49,30 @@ const RegisterForm = () => {
     }
   };
 
-  useEffect(() => {
-    if (email.trim() && password.trim()) {
-      setDisabled(false);
-    } else {
-      setDisabled(true);
+  const handleVerification = async (otpString) => {
+    setLoading(true)
+    setError("")
+    try {
+      const data = await verifyUser(email, otpString)
+      dispatch(login(data.user))
+      navigate({to: "/dashboard"})
+    } catch (error) {
+      setError(error.message || "Invalid OTP")
+    } finally {
+      setLoading(false)
     }
-  }, [email, password]);
+  }
+
+  const handleResendOTP = async () => {
+    setError("")
+    try {
+      await resendOTP(email)
+      // notification new code sent
+    } catch (error) {
+      setError(error.message || "Could not resend OTP")
+    }
+  }
+
 
   return (
     <div>
@@ -79,8 +104,9 @@ const RegisterForm = () => {
               autoComplete="off"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              disabled={loading}
               required
-              className="w-full min-w-max border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-md px-2 py-1"
+              className={`w-full min-w-max border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-md px-2 py-1 ${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
             />
 
             <label
@@ -97,7 +123,8 @@ const RegisterForm = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full min-w-max border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-md px-2 py-1"
+              disabled={loading}
+              className={`w-full min-w-max border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-md px-2 py-1 ${loading ? "bg-gray-100 cursor-not-allowed" : ""}`}
             />
 
             <label
@@ -106,20 +133,31 @@ const RegisterForm = () => {
             >
               Password
             </label>
-            <input
-              type="password"
+            <div className="relative">
+              <input
+              type={showPassword ? "text" : "password"}
               id="password"
               placeholder="**********"
               autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full min-w-max border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-md px-2 py-1"
+              disabled={loading}
+              className={`w-full min-w-max border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-md px-2 py-1 pr-10 ${loading ? " bg-gray-100 cursor-not-allowed" : ""}`}
             />
+            {password && <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-2 top-1.5 text-sm text-gray-600 hover:text-blue-500"
+            >
+              {showPassword ? "Hide" : "Show"}
+            </button>}
+            </div>
+            
 
             <button
               type="submit"
-              disabled={disabled}
+              disabled={!isFormValid || loading}
               className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 items-center font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 rounded-md"
             >
               {loading ? "Sending OTP..." : "Register"}
@@ -140,7 +178,11 @@ const RegisterForm = () => {
             <p className="text-sm text-gray-800" >
               Wrong Email ? {" "}
               <button
-                onClick={() => setStep(1)}
+                onClick={() => {
+                  setStep(1)
+                  setPassword("")
+                  setError("")
+                }}
                 className="text-sm text-blue-500 hover:text-blue-600 mb-4 "
               >
                 Go Back
@@ -152,7 +194,11 @@ const RegisterForm = () => {
               {error}
             </div>
           )}
-          <OTPComp />
+          <OTPComp 
+            onVerify={handleVerification} 
+            onResend={handleResendOTP}
+            // isLoading={loading}
+            />
         </div>
       )}
 

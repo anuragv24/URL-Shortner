@@ -14,13 +14,12 @@ export const findUserById = async (id) => {
 export const createUser = async (name, email, password) => {
     const newUser = new User({name, email, password})
     const otp = createOTP()
-    await newUser.setOtp(otp)
-    await newUser.save()
-    return newUser
+    await newUser.setOTP(otp)
+    // await newUser.save()
+    return {newUser, otp}
 }
 
 export const findUserByIdPublic = async (id) => {
     const user = await User.findById(id).select("-password -referenceToken -__v")
-    console.log("findUserByIdPublic --> ", user)
     return user
 }

@@ -28,13 +28,13 @@ const NavBar = () => {
               to="/dashboard"
             className="text-2xl font-bold text-gray-800 hover:text-blue-600 transition "
             >
-              Short.ly
+              Cut.it
             </Link> : 
             <Link
               to="/"
               className="text-2xl font-bold text-gray-800 hover:text-blue-600 transition"
             >
-              Short.ly
+              Cut.it
             </Link>
           }
          

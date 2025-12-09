@@ -7,7 +7,6 @@ import {Link, useNavigate} from '@tanstack/react-router'
 const LoginForm = () => {
   const [email, setEmail] = useState("one@gmail.com");
   const [password, setPassword] = useState("123456");
-  const [disabled, setDisabled] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -15,9 +14,21 @@ const LoginForm = () => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
+  const isFormValid = email.trim() !== "" && password.trim() !== ""
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+    if(!EMAIL_REGEX.test(email)){
+          setError("Please enter a valid email address.")
+          return
+        }
+    
+    if (!PASSWORD_REGEX.test(password)) {
+          setError("Password must be at least 8 characters, include an uppercase letter, a number, and a special character.");
+          return;
+        }
+
     setLoading(true)
     setError('')
 
@@ -32,14 +43,6 @@ const LoginForm = () => {
         setLoading(false)
     } 
   }
-
-  useEffect(()=>{
-    if(email.trim() && password.trim()){
-        setDisabled(false);
-    } else {
-        setDisabled(true)
-    }
-  }, [email, password])
   
   return (
     <div>
@@ -84,7 +87,7 @@ const LoginForm = () => {
 
         <button 
             type="submit"
-            disabled={disabled}
+            disabled={!isFormValid || loading}
             className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 items-center font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 rounded-md"
             >{loading ? "Signing In.... " : "Sign In"}
         </button>

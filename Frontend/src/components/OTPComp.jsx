@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 const OTPBoxSize = 6;
 
-const OTPComp = ({onVerify}) => {
+const OTPComp = ({onVerify, onResend, }) => {
   const [inputArr, setInputArr] = useState(Array(OTPBoxSize).fill(""));
   const [timer, setTimer] = useState(30);
   const [isResendDisabled, setIsResendDisabled] = useState(true)
@@ -29,6 +29,7 @@ const OTPComp = ({onVerify}) => {
     setIsResendDisabled(true)
     setTimer(30)
     //call backend resend API 
+    if (onResend) onResend()
   }
 
   const handleInput = (e, index) => {

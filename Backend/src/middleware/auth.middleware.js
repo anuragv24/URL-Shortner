@@ -4,7 +4,6 @@ import { ApiResponse } from "../utils/ApiResponse.js"
 
 export const authMiddleware = async (req, res, next) => {
     const token = req.cookies?.accessToken
-
     if(!token) 
         return res
             .status(401)

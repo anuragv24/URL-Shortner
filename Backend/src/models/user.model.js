@@ -42,7 +42,7 @@ const userSchema = new mongoose.Schema({
         type: Date
     },
 
-    passwordResentTokenHash: {
+    passwordResetTokenHash: {
         type: String
     },
     passwordResetExpiresAt: {
@@ -72,26 +72,47 @@ userSchema.methods.setOTP = async function(plainOTP, ttlMinutes = 10){
 }
 
 userSchema.methods.checkOTP = async function(plainOTP){
-    if(!this.otpHash || !this.otpExpiresAt) return false
-    if(Date.now() > this.otpExpiresAt) return 'expired'
+    if(!this.otpHash || !this.otpExpiresAt) 
+        return { status: false, message: "OTP not found" }
+
+    if(Date.now() > this.otpExpiresAt) {
+        this.otpHash = undefined
+        this.otpExpiresAt = undefined
+        await this.save()
+        return { status: false, message: "OTP has expired" }
+    }
+
+    const MAX_ATTEMPTS = 3
+
+    if(this.otpFailedAttempts >= MAX_ATTEMPTS){
+        this.otpHash = undefined
+        this.otpExpiresAt = undefined
+        await this.save()
+        return {
+            status: false,
+            message: "Too many failed attempts. Your code has been invalidated"
+        }
+    }
+
     const ok = await bcrypt.compare(plainOTP, this.otpHash)
     if(!ok){
         this.otpFailedAttempts = (this.otpFailedAttempts || 0) + 1
         await this.save()
-        return false
+
+        const attemptsLeft = MAX_ATTEMPTS - this.otpFailedAttempts;
+        return { status: false, message: `Incorrect OTP. You have ${attemptsLeft} attempts left.` }
     }
+    
     //success
     this.otpHash = undefined
     this.otpExpiresAt = undefined
     this.otpFailedAttempts = 0
     this.isVerified = true
     await this.save()
-    return true
+    return { status: true, message: "Verification successful" }
 }
 
-userSchema.methods.isOTPCorrect = async function (otp){
-    return await bcrypt.compare(otp, this.otpHash)
-}
+
 
 userSchema.methods.generateAccessToken= function () {
     return jwt.sign(
