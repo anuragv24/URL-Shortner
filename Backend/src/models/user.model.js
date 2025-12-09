@@ -139,6 +139,14 @@ userSchema.methods.generateRefreshToken = function () {
     )
 }
 
+userSchema.index(
+    {createdAt: 1},
+    {
+        expireAfterSeconds: 60*60*24*7,
+        partialFilterExpression: {isVerified: false}
+    }
+)
+
 
 
 

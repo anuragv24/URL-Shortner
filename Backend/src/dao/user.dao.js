@@ -23,3 +23,9 @@ export const findUserByIdPublic = async (id) => {
     const user = await User.findById(id).select("-password -referenceToken -__v")
     return user
 }
+
+export const otpSetUp = async (user) => {
+    const otp = createOTP()
+    await user.setOTP(otp)
+    return {otp}
+}

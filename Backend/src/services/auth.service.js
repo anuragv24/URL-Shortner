@@ -1,37 +1,35 @@
-import { createUser, findUserByEmail, findUserByIdPublic } from "../dao/user.dao.js"
+import { createUser, findUserByEmail, findUserByIdPublic, otpSetUp } from "../dao/user.dao.js"
 import { ApiError } from "../utils/apiErrorHandler.js"
-import { sendMail } from "./emailService.js"
+import { sendVerificationEmail } from "./emailHelper.js"
 
 
 export const registerUser = async (name, email, password) => {
   
-    const existedUser = await findUserByEmail(email)
-    if(existedUser) throw new ApiError(409, "User already exist")
+    let user = await findUserByEmail(email)
+    let otp
+    let isNewUser = false
 
-    const {newUser, otp} = await createUser(name, email, password)
-    if(!newUser) throw new ApiError(500, "Failed to create user due to server error")
+    if(user){
+        if(user.isVerified)
+            throw new ApiError(409, "User already exist")
+        
+       otp =  await otpSetUp(user)
+    } else {
+        const result = await createUser(name, email, password)
+        if(!result) throw new ApiError(500, "Failed to create user due to server error")
+
+        otp = result.otp
+        user = result.otp
+        isNewUser = true
+        
+    }
 
     try {
-        const message = `Your verification code is: ${otp}. This code expires in 10 minuutes.`
-        await sendMail({
-            to:email,
-            subject: "Your Verification Code",
-            text: message,
-            html: `
-            <div style="font-family: Arial, sans-serif; padding: 20px;">
-                <h2>Hello ${name},</h2>
-                <p>Your verification code is:</p>
-                <h1 style="color: #4F46E5; letter-spacing: 5px;">${otp}</h1>
-                <p>This code expires in 10 minutes.</p>
-                <p>If you didn't request this, please ignore this email.</p>
-                <br>
-                <p>Thanks,<br>${process.env.APP_NAME}</p>
-            </div>
-            `,
-        })
+        await sendVerificationEmail(name, email, otp)
         return true
     } catch (error) {
-        await newUser.deleteOne()
+        if(isNewUser)
+        await isNewUser.deleteOne()
         throw new ApiError(500, "Email could not be sent. Please try again later.")
     }
 }

@@ -4,9 +4,10 @@ import { ApiError } from "../utils/apiErrorHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { cookieOptions } from "../config/config.js";
-import { findUserByEmail, findUserByIdPublic } from "../dao/user.dao.js";
+import { findUserByEmail, findUserByIdPublic, otpSetUp } from "../dao/user.dao.js";
 import { createOTP } from "../utils/helper.js";
 import { sendMail } from "../services/emailService.js";
+import { sendVerificationEmail } from "../services/emailHelper.js";
 
 export const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
@@ -149,30 +150,11 @@ export const resendOtp = asyncHandler(async (req, res) => {
       throw new ApiError(429,  `Please wait ${secondsRemaining} seconds before resending`)
     }
   }
-
-  const otp = createOTP()
-  await user.setOTP(otp)
-  console.log(otp)
+  const otp = await otpSetUp(user)
 
   // call nodemailer function
   try {
-    const message = `Your new verificatioin code is:${otp}. This code expires in 10 minutes.`
-    await sendMail({
-      to:email,
-      subject: "Your New Verification Code.",
-      text: message,
-      html: `
-          <div style="font-family: Arial, sans-serif; padding: 20px;">
-            <h2>Hello ${user.name},</h2>
-            <p>You requested a new verification code:</p>
-            <h1 style="color: #4F46E5; letter-spacing: 5px;">${otp}</h1>
-            <p>This code expires in 10 minutes.</p>
-            <p>If you didn't request this, please ignore this email.</p>
-            <br>
-            <p>Thanks,<br>${process.env.APP_NAME}</p>
-          </div>
-      `
-    })
+    await sendVerificationEmail(user.name, email, otp)
 
     return res.status(200).json(
       new ApiResponse(
