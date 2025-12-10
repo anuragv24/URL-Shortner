@@ -27,5 +27,5 @@ export const findUserByIdPublic = async (id) => {
 export const otpSetUp = async (user) => {
     const otp = createOTP()
     await user.setOTP(otp)
-    return {otp}
+    return otp
 }

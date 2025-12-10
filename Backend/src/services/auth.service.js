@@ -13,14 +13,17 @@ export const registerUser = async (name, email, password) => {
         if(user.isVerified)
             throw new ApiError(409, "User already exist")
         
-       otp =  await otpSetUp(user)
+        otp =  await otpSetUp(user)
     } else {
         const result = await createUser(name, email, password)
         if(!result) throw new ApiError(500, "Failed to create user due to server error")
 
         otp = result.otp
-        user = result.otp
-        isNewUser = true
+        user = result.newUser
+        // isNewUser = true
+        // console.log("result :::: ", result)
+        // console.log("opt :::: ", typeof(otp))
+        // console.log("user :::: ", user)
         
     }
 
