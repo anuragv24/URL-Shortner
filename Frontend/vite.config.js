@@ -6,5 +6,9 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [
     react(),
-    tailwindcss()],
+    tailwindcss()
+  ],
+  esbuild: {
+    drop: mode === 'production' ? ['console', 'debugger'] : []
+    }
 })
