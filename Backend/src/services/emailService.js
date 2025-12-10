@@ -2,11 +2,13 @@ import nodemailer from "nodemailer"
 import {ApiError} from '../utils/apiErrorHandler.js'
 
 export const sendMail = async(options) => {
+    console.log(`Checking Env: User='${process.env.EMAIL_USER}' PassLength=${process.env.EMAIL_PASS ? process.env.EMAIL_PASS.length : 0}`);
+
     const transporter = nodemailer.createTransport({
         // service: "gmail",
         host: "smtp.gmail.com",
-        port: 587,
-        secure: false,
+        port: 465,
+        secure: true,
         auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS
