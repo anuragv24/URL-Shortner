@@ -11,7 +11,9 @@ export const sendMail = async(options) => {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASS
         },
-        connectionTimeout: 10000
+        
+        connectionTimeout: 10000,
+        family: 4
     })
 
     const mailOptions = {
