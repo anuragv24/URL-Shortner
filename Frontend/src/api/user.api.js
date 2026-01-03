@@ -11,8 +11,8 @@ export const registerUser = async(name, email, password) => {
 }
 
 export const verifyUser = async(email, otpString) => {
-    console.log("email  ::  ", email)
-    console.log("otp  ::  ", otpString)
+    // console.log("email  ::  ", email)
+    // console.log("otp  ::  ", otpString)
     const {data} = await axiosInstance.post("/api/auth/verify-otp", {email, otpString})
     return data.data
 }
