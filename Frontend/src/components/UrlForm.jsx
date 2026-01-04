@@ -3,6 +3,7 @@ import { createShortUrl } from "../api/shortUrl.api";
 import { useSelector } from "react-redux";
 import { queryClient } from "../main";
 import QRCode from "react-qr-code";
+import Modal from "./Modal";
 
 const UrlForm = () => {
   const [url, setUrl] = useState("");
@@ -10,7 +11,7 @@ const UrlForm = () => {
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState(null);
   const [customSlug, setCustomSlug] = useState("");
-  const [isGenerateQR, setIsGenerateQR] = useState(false)
+  const [isGenerateQR, setIsGenerateQR] = useState(false);
 
   const { isAuthenticated } = useSelector((state) => state.auth);
 
@@ -37,8 +38,8 @@ const UrlForm = () => {
   };
 
   const generateQR = () => {
-    setIsGenerateQR(prev => !prev)
-  }
+    setIsGenerateQR((prev) => !prev);
+  };
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -106,15 +107,21 @@ const UrlForm = () => {
             >
               {copied ? "Copied" : "Copy"}
             </button>
-            {isAuthenticated && <button onClick={generateQR}>Generate QR</button>}
+            {!isAuthenticated && (
+              <button 
+                onClick={generateQR}
+                className="ml-2 px-4 py-1 rounded-md bg-gray-200  font-medium hover:bg-gray-300 transition-colors duration-300"
+                >Generate QR</button>
+            )}
           </div>
-          {isGenerateQR && <QRCode 
+          {/* {isGenerateQR && <QRCode 
         size={256}
-        value={shortUrl} />}
-        {isGenerateQR && <div className="min-h-full w-full bg-black/10">Hello</div> }
+        value={shortUrl} />} */}
+          <Modal isOpen={isGenerateQR} onClose={() => setIsGenerateQR(false)}>
+            <QRCode size={256} value={shortUrl} />
+          </Modal>
         </div>
       )}
-      
     </>
   );
 };
