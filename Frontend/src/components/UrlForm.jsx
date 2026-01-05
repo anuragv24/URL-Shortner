@@ -107,16 +107,14 @@ const UrlForm = () => {
             >
               {copied ? "Copied" : "Copy"}
             </button>
-            {!isAuthenticated && (
+            {isAuthenticated && (
               <button 
                 onClick={generateQR}
                 className="ml-2 px-4 py-1 rounded-md bg-gray-200  font-medium hover:bg-gray-300 transition-colors duration-300"
                 >Generate QR</button>
             )}
           </div>
-          {/* {isGenerateQR && <QRCode 
-        size={256}
-        value={shortUrl} />} */}
+          
           <Modal isOpen={isGenerateQR} onClose={() => setIsGenerateQR(false)}>
             <QRCode size={256} value={shortUrl} />
           </Modal>
