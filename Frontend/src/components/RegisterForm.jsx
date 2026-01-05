@@ -22,6 +22,7 @@ const RegisterForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     if(!EMAIL_REGEX.test(email)){
       setError("Please enter a valid email address.")
@@ -34,7 +35,7 @@ const RegisterForm = () => {
     }
 
     setLoading(true);
-    setError("");
+    
 
     try {
       const data = await registerUser(name, email, password);

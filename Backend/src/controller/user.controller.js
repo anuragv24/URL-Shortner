@@ -18,3 +18,33 @@ export const getAllUserUrl = asyncHandler(async (req, res) => {
         )
     )
 })
+
+export const deleteUrl = asyncHandler(async(req, res) => {
+    const {urlId} = req.body
+    const {_id: userId} = req.user
+
+    if(!urlId){
+        return res.status(400).json(
+            new ApiResponse(400, {}, "URL id is required")
+        )
+    }
+
+    const deleted = await UrlModel.deleteOne({
+        _id: urlId,
+        user: userId,
+    })
+
+    if(deleted.deletedCount === 0){
+        return res.status(404).json(
+            new ApiResponse(404, {}, "URL not found or not authorised")
+        )
+    }
+
+    res.status(200).json(
+        new ApiResponse(
+            200,
+            {urlId},
+            "Url deleted successfully"
+        )
+    )
+})

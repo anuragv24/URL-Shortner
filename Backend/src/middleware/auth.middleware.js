@@ -11,7 +11,7 @@ export const authMiddleware = async (req, res, next) => {
                 new ApiResponse(
                     401,
                 {},
-            "Token not found1111111111"
+            "Token not found"
         ))
 
     try{

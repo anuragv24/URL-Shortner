@@ -1,8 +1,11 @@
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { getAllUserUrls } from "../api/user.api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteUserUrl, getAllUserUrls } from "../api/user.api";
 
 const UserUrl = () => {
+
+  const queryClient = useQueryClient()
+
   const {
     data: urls,
     isLoading,
@@ -15,7 +18,14 @@ const UserUrl = () => {
     staleTime: 0, // Consider data stale immediately so it refetches when invalidated
   });
   console.log("urls: ", urls);
-  
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteUserUrl,
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey: ["userUrls"]})
+    }
+  })
+
   const [copiedId, setCopiedId] = useState(null);
   const handleCopy = (url, id) => {
     navigator.clipboard.writeText(url);
@@ -26,6 +36,12 @@ const UserUrl = () => {
       setCopiedId(null);
     }, 2000);
   };
+
+  const handleDelete = (id) => {
+    console.log("handle delete called");
+    deleteMutation.mutate(id)
+    
+    }
 
   if (isLoading) {
     return (
@@ -96,10 +112,16 @@ const UserUrl = () => {
               >
                 Actions
               </th>
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Delete
+              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {urls.urls.reverse().map((url) => (
+            {[...urls.urls].reverse().map((url) => (
               <tr key={url._id} className="hover:bg-gray-50">
                 <td className="px-6 py-4">
                   <div className="text-sm text-gray-900 truncate max-w-xs">
@@ -109,7 +131,9 @@ const UserUrl = () => {
                 <td className="px-6 py-4">
                   <div className="text-sm">
                     <a
-                      href={`${import.meta.env.VITE_API_BASE_URL}/${url.short_url}`}
+                      href={`${import.meta.env.VITE_API_BASE_URL}/${
+                        url.short_url
+                      }`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-blue-600 hover:text-blue-900 hover:underline"
@@ -176,6 +200,31 @@ const UserUrl = () => {
                         Copy URL
                       </>
                     )}
+                  </button>
+                </td>
+                <td className="px-6 py-4">
+                  <button 
+                    onClick={() => handleDelete(url._id)}
+                    className="inline-flex items-center px-3 py-1.5 border border-transparent text font-medium rounded-md shadow-sm bg-red-500 text-white hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                    <svg
+                      className="mr-1"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                      <path d="M10 11v6" />
+                      <path d="M14 11v6" />
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                    </svg>
+                    Delete
                   </button>
                 </td>
               </tr>
