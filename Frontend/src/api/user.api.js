@@ -44,3 +44,13 @@ export const deleteUserUrl = async (urlId) => {
     console.log("data ;;; ", data)
     return data
 }
+
+export const verifyUserEmail = async (email) => {
+    const {data} = await axiosInstance.post("/api/auth/forget-password", {email})
+    return data.data
+}
+
+export const setPassword = async (email, password) => {
+    const {data} = await axiosInstance.post("/api/auth/set-password", {email, password})
+    return data.data
+}

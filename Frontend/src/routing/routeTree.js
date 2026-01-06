@@ -6,6 +6,7 @@ import { analyticPageRoute } from "./analytic.routes";
 import { loginRoute } from "./login.routes";
 import { registerRoute } from "./register.routes";
 import { expireRoute } from "./expire.routes";
+import { forgetPassword } from "./forgetPassword.route";
 
 
 export const rootRoute = createRootRoute({
@@ -19,5 +20,6 @@ export const routeTree = rootRoute.addChildren([
     analyticPageRoute,
     loginRoute,
     registerRoute,
-    expireRoute
+    expireRoute,
+    forgetPassword
 ])

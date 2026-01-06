@@ -86,6 +86,10 @@ const LoginForm = () => {
           className="w-full min-w-max border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-md px-2 py-1"
         />
 
+        <div className="w-full min-w-max flex justify-end items-center text-blue-600 hover:text-blue-700 text-sm font-semibold">
+          <p><Link to="/forgetPassword" >Forgot passoword ?</Link></p>
+        </div>
+
         <button 
             type="submit"
             disabled={!isFormValid || loading}
@@ -95,7 +99,7 @@ const LoginForm = () => {
       </form>
     
     <div className="flex items-center justify-center mt-5">
-        <p className="text-sm text-gray-800" >Don't have an account?<Link to="/register" className="text-blue-500 hover:text-blue-600">Register</Link></p>
+        <p className="text-sm text-gray-800" >Don't have an account ?<Link to="/register" className="text-blue-500 hover:text-blue-600 font-semibold"> Register</Link></p>
 
     </div>
     </div>
