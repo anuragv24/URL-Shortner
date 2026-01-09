@@ -54,3 +54,13 @@ export const setPassword = async (email, password) => {
     const {data} = await axiosInstance.post("/api/auth/set-password", {email, password})
     return data.data
 }
+
+export const verifyOTPForPasswordChange = async(email, otpString) => {
+    const {data} = await axiosInstance.post("/api/auth/otp-verify", {email, otpString})
+    return data.data
+}
+
+export const resendOTPForPasswordChange = async(email) => {
+    const {data} = await axiosInstance.post("/api/auth/otp-resend", {email})
+    return data.data
+}

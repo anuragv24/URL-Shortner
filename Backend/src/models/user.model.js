@@ -47,7 +47,18 @@ const userSchema = new mongoose.Schema({
     },
     passwordResetExpiresAt: {
         type: Date
-    }
+    },
+
+    otpPurpose: {
+        type: String,
+        enum: ["verify_email", "reset_password"]
+    },
+
+    passwordResetAllowed: {
+        type: Boolean,
+        default: false
+    },
+
 
 }, {timestamps: true})
 
@@ -62,22 +73,28 @@ userSchema.methods.isPasswordCorrect = async function (password) {
     return await bcrypt.compare(password, this.password)
 }
 
-userSchema.methods.setOTP = async function(plainOTP, ttlMinutes = 10){
+userSchema.methods.setOTP = async function(plainOTP, ttlMinutes = 10, purpose = "verify_email"){
     const saltRounds = 10;
     this.otpHash = await bcrypt.hash(plainOTP, saltRounds)
     this.otpExpiresAt = Date.now() + ttlMinutes*60*1000
     this.lastVerificationSentAt = new Date()
     this.otpFailedAttempts = 0
+    this.otpPurpose = purpose
     await this.save()
 }
 
-userSchema.methods.checkOTP = async function(plainOTP){
+userSchema.methods.checkOTP = async function(plainOTP, purpose = "verify_email"){
     if(!this.otpHash || !this.otpExpiresAt) 
         return { status: false, message: "OTP not found" }
+
+    if(this.otpPurpose !== purpose){
+        return {status: false, message: "Invalid OTP context" }
+    }
 
     if(Date.now() > this.otpExpiresAt) {
         this.otpHash = undefined
         this.otpExpiresAt = undefined
+        this.otpPurpose = undefined
         await this.save()
         return { status: false, message: "OTP has expired" }
     }
@@ -87,6 +104,7 @@ userSchema.methods.checkOTP = async function(plainOTP){
     if(this.otpFailedAttempts >= MAX_ATTEMPTS){
         this.otpHash = undefined
         this.otpExpiresAt = undefined
+        this.otpPurpose = undefined
         await this.save()
         return {
             status: false,
@@ -107,9 +125,22 @@ userSchema.methods.checkOTP = async function(plainOTP){
     this.otpHash = undefined
     this.otpExpiresAt = undefined
     this.otpFailedAttempts = 0
-    this.isVerified = true
+    this.otpPurpose = undefined
+    if(purpose === "verify_email"){
+        this.isVerified = true
+    }
     await this.save()
     return { status: true, message: "Verification successful" }
+}
+
+userSchema.methods.rollbackOTP = async function() {
+    this.otpHash = undefined
+    this.otpExpiresAt= undefined
+    this. otpFailedAttempts = 0
+    this.otpPurpose = undefined
+    this.lastVerificationSentAt = undefined
+
+    await this.save()
 }
 
 

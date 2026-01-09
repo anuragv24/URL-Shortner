@@ -170,3 +170,147 @@ export const resendOtp = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Email could not sent. Please try again later.")
   }  
 })
+
+export const verifyEmail = asyncHandler(async(req, res) => {
+  const {email} = req.body
+
+  const user = await findUserByEmail(email)
+
+  let otp
+
+  try {
+    if(user) {
+      otp =  await otpSetUp(user, "reset_password")
+      await sendVerificationEmail("user", email, otp)
+    }
+
+    return res.status(200).json(
+    new ApiResponse(
+      200,
+      {},
+      "If an account with this email exists,a code has been sent."
+    )
+  )
+    
+  } catch (error) {
+    if(user && user.otpHash){
+      await user.rollbackOTP()
+    }
+    console.log("OTP email failed:", error)
+  throw new ApiError(500, "Email could not be sent. Please try again later.")
+  }
+
+})
+
+export const OTPVerificationForPasswordChange = asyncHandler(async(req, res) => {
+  const {email, otpString} = req.body
+
+  if(!email || !otpString) {
+    throw new ApiError(400, "Email and OTP required!")
+  }
+
+  const user = await findUserByEmail(email)
+  if(!user){
+    throw new ApiError(400, "User not found")
+  }
+
+  const VerificationResult = await user.checkOTP(otpString, "reset_password")
+
+  if(!VerificationResult?.status){
+    throw new ApiError(400, VerificationResult?.message)
+  }
+
+  user.passwordResetAllowed = true
+  user.passwordResetExpiresAt = Date.now() + 5 * 60 * 1000
+  await user.save()
+
+  res.status(200).json(
+    new ApiResponse(
+      200,
+      {},
+      "OTP Verified. Proceed to set New Password"
+    )
+  )
+
+
+
+
+  
+})
+
+export const OTPResendForPasswordChange = asyncHandler(async(req, res) => {
+
+  const{email} = req.body
+  if(!email){
+    throw new ApiError(400, "Email is required")
+  }
+
+  const user = await findUserByEmail(email)
+  if(!user){
+    throw new ApiError(404, "User not found")
+  }
+
+  const COOLDOWN_SECOND = 60
+
+  if(user.lastVerificationSentAt){
+    const timeSinceLastOtp = new Date() - new Date(user.lastVerificationSentAt)
+    const cooldownMs = COOLDOWN_SECOND * 1000
+
+    if(timeSinceLastOtp < cooldownMs){
+      const secondsRemaining = Math.ceil((cooldownMs - timeSinceLastOtp) / 1000)
+      throw new ApiError(429,  `Please wait ${secondsRemaining} seconds before resending`)
+    }
+  }
+
+  const otp = await otpSetUp(user, 10, "reset_password" )
+
+  try {
+    await sendVerificationEmail("user", email, otp)
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {},
+        "Verification code sent successfully"
+      )
+    )
+  } catch (error) {
+    if(user && user.otpHash){
+      await user.rollbackOTP()
+    }
+    console.log("OTP email failed:", error)
+    throw new ApiError(500, "Email could not sent. Please try again later.")
+  } 
+})
+
+export const setNewPassword = asyncHandler(async(req, res) => {
+  const {email, password} = req.body
+
+  if(!email || !password) {
+    throw new ApiError(400, "Email and Password required!")
+  }
+
+  const user = await findUserByEmail(email)
+  if(!user){
+    throw new ApiError(400, "Unable to reset password")
+  }
+
+  if(!user.passwordResetAllowed || Date.now() > user.passwordResetExpiresAt){
+    throw new ApiError(403, "OTP verification falied")
+  }
+
+user.password = password;
+user.passwordResetAllowed = false;
+user.passwordResetExpiresAt = undefined;
+await user.rollbackOTP()
+await user.save();
+
+res.status(200).json(
+  new ApiResponse(
+    200,
+    {},
+    "Password set Successfully"
+  )
+)
+
+})
