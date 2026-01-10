@@ -7,5 +7,5 @@ export const registerRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/register",
     component: RegisterPage,
-    beforeLoad: redirectIfAuth
+    // beforeLoad: redirectIfAuth
 })

@@ -41,12 +41,12 @@ export const loginUser = async(email, password) => {
 
     const existedUser = await findUserByEmail(email)
     if(!existedUser){
-        throw new ApiError(404, "User not found")
+        throw new ApiError(404, "Invalid email or password")
     }
     
     const isPasswordValid = await existedUser.isPasswordCorrect(password)
     if(!isPasswordValid){
-        throw new ApiError(401, "Invalid user credential")
+        throw new ApiError(401, "Invalid email or password")
     }
 
     const loggedInUser = await findUserByIdPublic(existedUser._id)

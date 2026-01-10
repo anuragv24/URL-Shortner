@@ -81,9 +81,13 @@ export const logout = asyncHandler(async (req, res) => {
 });
 
 export const getCurrentUser = asyncHandler(async (req, res) => {
-  res
-    .status(200)
-    .json(
+  if(!req.user){
+    return res.status(200).json(
+      new ApiResponse(200, {}, "No authenticated user")
+    )
+  }
+
+  return res.status(200).json(
       new ApiResponse(200, 
       { user: req.user }
       , "authenticated user")
@@ -98,12 +102,12 @@ export const verifyOtp = asyncHandler(async (req, res) => {
 
   const user = await findUserByEmail(email)
   if(!user){
-    throw new ApiError(400, "User not found")
+    throw new ApiError(400, "Invalid or expired verification code.")
   }
 
   const VerificationResult = await user.checkOTP(otpString)
   if(!VerificationResult?.status){
-    throw new ApiError(400, VerificationResult?.message)
+    throw new ApiError(400, "Invalid or expired verification code")
   }
 
   const registeredUser = await findUserByIdPublic(user?._id)
@@ -130,13 +134,19 @@ export const resendOtp = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Email is required")
   }
 
+  const GENERIC_RESPONSE = new ApiResponse(
+    200,
+    {},
+    "If an account with this email exists,a code has been sent."
+  )
+
   const user = await findUserByEmail(email)
   if(!user){
-    throw new ApiError(404, "User not found")
+    return res.status(200).json(GENERIC_RESPONSE)
   }
 
   if(user.isVerified){
-    throw new ApiError(400, "Email is already verified. You can login")
+    return res.status(200).json(GENERIC_RESPONSE)
   }
 
   const COOLDOWN_SECOND = 60
@@ -146,8 +156,7 @@ export const resendOtp = asyncHandler(async (req, res) => {
     const cooldownMs = COOLDOWN_SECOND * 1000
 
     if(timeSinceLastOtp < cooldownMs){
-      const secondsRemaining = Math.ceil((cooldownMs - timeSinceLastOtp) / 1000)
-      throw new ApiError(429,  `Please wait ${secondsRemaining} seconds before resending`)
+      throw new ApiError(429, "Please wait before requesting a new code.")
     }
   }
   const otp = await otpSetUp(user)
@@ -156,13 +165,7 @@ export const resendOtp = asyncHandler(async (req, res) => {
   try {
     await sendVerificationEmail(user.name, email, otp)
 
-    return res.status(200).json(
-      new ApiResponse(
-        200,
-        {},
-        "Verification code sent successfully"
-      )
-    )
+    return res.status(200).json(GENERIC_RESPONSE)
   } catch (error) {
     user.otpHash = undefined
     user.otpExpiresAt = undefined
@@ -211,7 +214,7 @@ export const OTPVerificationForPasswordChange = asyncHandler(async(req, res) => 
 
   const user = await findUserByEmail(email)
   if(!user){
-    throw new ApiError(400, "User not found")
+    throw new ApiError(400, "Invalid or expired verification code.")
   }
 
   const VerificationResult = await user.checkOTP(otpString, "reset_password")
@@ -245,42 +248,40 @@ export const OTPResendForPasswordChange = asyncHandler(async(req, res) => {
     throw new ApiError(400, "Email is required")
   }
 
+  const GENERIC_RESPONSE = new ApiResponse(
+    200,
+    {},
+    "If an account with this email exists,a code has been sent."
+  )
+
   const user = await findUserByEmail(email)
   if(!user){
-    throw new ApiError(404, "User not found")
+    return res.status(200).json(GENERIC_RESPONSE)
   }
 
-  const COOLDOWN_SECOND = 60
+  const COOLDOWN_SECOND = 30
 
   if(user.lastVerificationSentAt){
     const timeSinceLastOtp = new Date() - new Date(user.lastVerificationSentAt)
     const cooldownMs = COOLDOWN_SECOND * 1000
 
     if(timeSinceLastOtp < cooldownMs){
-      const secondsRemaining = Math.ceil((cooldownMs - timeSinceLastOtp) / 1000)
-      throw new ApiError(429,  `Please wait ${secondsRemaining} seconds before resending`)
+      return res.status(200).json(GENERIC_RESPONSE)
     }
   }
 
-  const otp = await otpSetUp(user, 10, "reset_password" )
+  const otp = await otpSetUp(user, "reset_password" )
 
   try {
     await sendVerificationEmail("user", email, otp)
 
-    return res.status(200).json(
-      new ApiResponse(
-        200,
-        {},
-        "Verification code sent successfully"
-      )
-    )
+    return res.status(200).json(GENERIC_RESPONSE)
   } catch (error) {
     if(user && user.otpHash){
       await user.rollbackOTP()
     }
     console.log("OTP email failed:", error)
-    throw new ApiError(500, "Email could not sent. Please try again later.")
-  } 
+    return res.status(200).json(GENERIC_RESPONSE)  } 
 })
 
 export const setNewPassword = asyncHandler(async(req, res) => {
@@ -302,6 +303,7 @@ export const setNewPassword = asyncHandler(async(req, res) => {
 user.password = password;
 user.passwordResetAllowed = false;
 user.passwordResetExpiresAt = undefined;
+user.referenceToken = undefined;
 await user.rollbackOTP()
 await user.save();
 
@@ -312,5 +314,33 @@ res.status(200).json(
     "Password set Successfully"
   )
 )
+
+})
+
+export const refreshAccessToken = asyncHandler(async(req, res) => {
+  const refreshToken = req.cookies?.refreshToken
+
+  if(!refreshToken){
+    return res.status(401).json(new ApiResponse(401, {}, "Refresh token missing"))
+  }
+
+  try {
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET)
+
+    const user = await findUserByIdPublic(decoded?.userId)
+
+    if(!user){
+      return res.status(401).json(new ApiResponse(401, {}, "Invalid refresh token"))
+    }
+
+      const accessToken =  await user.generateAccessToken()
+
+      res.cookie("accessToken", accessToken, cookieOptions)
+      return res.status(200).json(
+        new ApiResponse(200, {}, "Access token refreshed successfully")
+      )
+  } catch (error) {
+    return res.status(401).json(new ApiResponse(401, {}, "Refresh token expired"))
+  }
 
 })

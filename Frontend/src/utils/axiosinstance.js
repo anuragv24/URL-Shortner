@@ -7,50 +7,80 @@ const axiosInstance = axios.create({
 })
 
 axiosInstance.interceptors.response.use(
-    (response) => {
-        return response
-    },
-    (error)=>{
-        if(error.response){
-            const {status, data} = error.response
-            switch (status) {
-                case 400:
-                    console.error("Bad Request:", data);
-                    break;
-                case 401:
-                    console.error("Unauthorized:", data);
-                    // You could redirect to login page or refresh token here
-                    break;
-                case 403:
-                    console.error("Forbidden:", data);
-                    break;
-                case 404:
-                    console.error("Not Found:", data);
-                    break;
-                case 500:
-                    console.error("Server Error:", data);
-                    break;
-                default:
-                    console.error(`Error (${status}):`, data);
-            }
+  (response) => response,
+
+  async (error) => {
+    const originalRequest = error.config
+
+    if (error.response) {
+      const { status } = error.response
+      const url = originalRequest?.url
+
+      // ✅ DO NOT refresh for these routes
+      const isAuthMe = url?.includes("/auth/me")
+      const isRefresh = url?.includes("/auth/refresh")
+
+      // 🔁 Access token expired → try refresh
+      if (
+        status === 401 &&
+        !originalRequest._retry &&
+        !isAuthMe &&
+        !isRefresh
+      ) {
+        originalRequest._retry = true
+
+        try {
+          await axiosInstance.post("/api/auth/refresh")
+          return axiosInstance(originalRequest)
+        } catch (refreshError) {
+          // Refresh failed → session dead
+          console.warn("Refresh token expired. Logging out.")
+          window.location.href = "/login"
+          return Promise.reject(refreshError)
         }
-        else if (error.request) {
-            // The request was made but no response was received
-            console.error("Network Error: No response received", error.request);
-        } else {
-            // Something happened in setting up the request
-            console.error("Error:", error.message);
-        }
-         return Promise.reject({
-            // isAxiosError: true,
-            message: error.response?.data?.message || error.message || "Unknown error occurred",
-            status: error.response?.status,
-            data: error.response?.data,
-            // originalError: error
-        });
-    
+      }
+
+      // 🧠 Normal error handling (no refresh)
+      switch (status) {
+        case 400:
+          console.error("Bad Request")
+          break
+        case 401:
+          console.error("Unauthorized")
+          break
+        case 403:
+          console.error("Forbidden")
+          break
+        case 404:
+          console.error("Not Found")
+          break
+        case 500:
+          console.error("Server Error")
+          break
+        default:
+          console.error(`Error (${status})`)
+      }
     }
+
+    else if (error.request) {
+      console.error("Network Error: No response received")
+    }
+
+    else {
+      console.error("Error:", error.message)
+    }
+
+    return Promise.reject({
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Unknown error occurred",
+      status: error.response?.status,
+      data: error.response?.data,
+    })
+  }
 )
+
 
 
 export default axiosInstance

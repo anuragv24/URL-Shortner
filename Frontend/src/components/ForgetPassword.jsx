@@ -100,7 +100,7 @@ const ForgetPassword = () => {
   };
 
   return <div>
-    <div className="min-h-[380px] flex flex-col justify-center">
+    <div className="flex flex-col justify-center">
       {step === 1 && (
         <EmailStep 
           email={email}
@@ -117,7 +117,10 @@ const ForgetPassword = () => {
         error={error}
         onVerify={handleVerification}
         onResend={hanldeResendOTP}
-        onGoBack={() => setStep(1)}
+        onGoBack={() => {
+          setStep(1)
+          setError("")
+        }}
         />
       )}
 

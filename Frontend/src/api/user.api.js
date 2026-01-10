@@ -28,6 +28,7 @@ export const logoutUser = async() => {
 
 export const getCurrentUser = async() => {
     const {data} = await axiosInstance.get("/api/auth/me")
+    // console.log("current user data :: ", data)
     return data.data
 }
 
