@@ -6,8 +6,8 @@ import {Link, useNavigate} from '@tanstack/react-router'
 import { EMAIL_REGEX, PASSWORD_REGEX } from "../utils/regex";
 
 const LoginForm = () => {
-  const [email, setEmail] = useState("thrillingverma@gmail.com");
-  const [password, setPassword] = useState("As@12345");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
