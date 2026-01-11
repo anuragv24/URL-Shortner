@@ -7,5 +7,5 @@ export const loginRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: "/login",
     component: LoginPage ,
-    beforeLoad: redirectIfAuth
+    // beforeLoad: redirectIfAuth
 })
