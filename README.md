@@ -24,10 +24,10 @@ https://github.com/anuragv24/URL-Shortner
 ---
 
 ## 📸 Screenshots
-![Home](./screenshots/Home.png)
-![Auth](./screenshots/Auth.png)
-![LoggedIn](./screenshots/LoggedIn.png)
-![Analytics](./screenshots/Analytics.png)
+![Home](./Screenshots/Home.png)
+![Auth](./Screenshots/Auth.png)
+![LoggedIn](./Screenshots/LoggedIn.png)
+![Analytics](./Screenshots/Analytics.png)
 
 ## 🛠 Tech Stack
 
