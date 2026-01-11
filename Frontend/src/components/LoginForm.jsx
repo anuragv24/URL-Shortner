@@ -35,7 +35,7 @@ const LoginForm = () => {
 
     try {
         const data = await loginUser(email, password)
-        dispatch(login(data.user))
+        dispatch(login(data?.user))
         navigate({to:"/dashboard", replace: true})
         
     } catch (error) {

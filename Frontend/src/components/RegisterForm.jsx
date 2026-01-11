@@ -55,7 +55,7 @@ const RegisterForm = () => {
     setError("")
     try {
       const data = await verifyUser(email, otpString)
-      dispatch(login(data.user))
+      dispatch(login(data?.user))
       navigate({to: "/dashboard"})
     } catch (error) {
       setError(error.message || "Invalid OTP")

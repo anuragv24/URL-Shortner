@@ -20,7 +20,7 @@ export const createUser = async (name, email, password) => {
 }
 
 export const findUserByIdPublic = async (id) => {
-    const user = await User.findById(id).select("-password -referenceToken -__v")
+    const user = await User.findById(id).select("-password -referenceToken -__v -otpHash -otpExpiresAt -otpFailedAttempts -otpPurpose -lastVerificationSentAt -passwordResetTokenHash -passwordResetExpiresAt -passwordResetAllowed")
     return user
 }
 

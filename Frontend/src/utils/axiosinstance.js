@@ -19,13 +19,15 @@ axiosInstance.interceptors.response.use(
       // ✅ DO NOT refresh for these routes
       const isAuthMe = url?.includes("/auth/me")
       const isRefresh = url?.includes("/auth/refresh")
+      const isLogin = url?.includes("/auth/login")
 
       // 🔁 Access token expired → try refresh
       if (
         status === 401 &&
         !originalRequest._retry &&
         !isAuthMe &&
-        !isRefresh
+        !isRefresh &&
+        !isLogin
       ) {
         originalRequest._retry = true
 

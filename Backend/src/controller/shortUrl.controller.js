@@ -12,6 +12,8 @@ export const createShortUrl = asyncHandler(async (req, res) => {
 
   if (user) {
     const { slug } = req.body;
+    console.log("createShortUrl with user -- slug" , slug);
+
     shortUrl = await createShortUrlWithUser(url, user?._id, slug);
   } else {
     shortUrl = await createShortUrlWithoutUser(url);

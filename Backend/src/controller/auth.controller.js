@@ -51,7 +51,7 @@ export const register = asyncHandler(async (req, res) => {
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    throw new ApiError(400, "email and password required");
+    throw new ApiError(400, "Email and Password are required");
   }
 
   const loggedInUser = await loginUser(email, password);
@@ -83,14 +83,22 @@ export const logout = asyncHandler(async (req, res) => {
 export const getCurrentUser = asyncHandler(async (req, res) => {
   if(!req.user){
     return res.status(200).json(
-      new ApiResponse(200, {}, "No authenticated user")
+      new ApiResponse(
+        200,
+        {isAuthenticatedUser: false}, 
+        "No authenticated user")
     )
   }
 
   return res.status(200).json(
-      new ApiResponse(200, 
-      { user: req.user }
-      , "authenticated user")
+      new ApiResponse(
+      200,
+      { 
+        isAuthenticatedUser: true,
+        user: req.user
+       }, 
+       "authenticated user"
+      )
     );
 });
 

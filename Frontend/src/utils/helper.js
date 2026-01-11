@@ -11,8 +11,8 @@ export const checkAuth =  async({context}) => {
             queryFn: getCurrentUser,
         })
         
-        if(!data) return false
-        store.dispatch(login(data.user))
+        if(!data?.isAuthenticatedUser) return false
+        store.dispatch(login(data?.user))
         
         const {isAuthenticated} = store.getState().auth
         if(!isAuthenticated) return false
@@ -29,7 +29,7 @@ export const redirectIfAuth = async ({ context }) => {
       queryKey: ['currentUser'],
       queryFn: getCurrentUser,
     })
-    if (user.user) {
+    if (user?.user) {
       return redirect({ to: "/dashboard" }) // 👈 prevents seeing login again
     }
   } catch {
