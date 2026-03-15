@@ -42,6 +42,9 @@ app.use(express.urlencoded({extended:true}))
 app.use(express.json())
 app.use(cookieParser())
 
+app.use("/api/health", (req, res) => {
+  res.status(200).send('Server is alive')
+})
 app.use("/api/user", userRouter)
 app.use("/api/auth", authRouter)
 app.use("/api/create", urlRouter)
