@@ -12,11 +12,14 @@ const UrlForm = () => {
   const [error, setError] = useState(null);
   const [customSlug, setCustomSlug] = useState("");
   const [isGenerateQR, setIsGenerateQR] = useState(false);
+  const [isloading, setIsLoading] = useState(false);
 
   const { isAuthenticated } = useSelector((state) => state.auth);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
+
     try {
       const shortUrl = await createShortUrl(url, customSlug);
       // console.log("shortUrl, ", shortUrl);
@@ -26,6 +29,8 @@ const UrlForm = () => {
       setError(null);
     } catch (error) {
       setError(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -58,8 +63,9 @@ const UrlForm = () => {
         <button
           type="submit"
           className="w-full bg-blue-600 hover:bg-blue-800 text-white py-2 items-center font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 disabled:opacity-50 rounded-md"
+          disabled={isloading}
         >
-          Shorten URL
+          {isloading ? "Shortening..." : "Shorten URL"}
         </button>
         {error && (
           <div className="mt-4 p-3 bg-red-100 text-red-700 rounded-md">
